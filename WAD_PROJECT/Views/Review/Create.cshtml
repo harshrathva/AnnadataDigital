@@ -1,0 +1,65 @@
+@model AgriDirect.Models.ViewModels.ReviewViewModel
+@{
+    ViewData["Title"] = "Write Review";
+}
+
+<div style="max-width: 600px; margin: 2rem auto;">
+    <div style="margin-bottom: 1.5rem;">
+        <a asp-controller="Order" asp-action="Details" asp-route-id="@Model.OrderId" style="color: var(--text-muted); font-size: 0.88rem;">&larr; Back to Order Details</a>
+        <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin-top: 0.4rem;">Rate &amp; Review Farmer</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Share your experience regarding the freshness, packaging, and service</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body" style="padding: 2rem;">
+            <div style="background: var(--surface-muted); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Harvest Product:</div>
+                <strong style="font-size: 1.05rem; display: block; margin-bottom: 0.3rem;">@Model.ProductName</strong>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Farmer: <strong>@Model.FarmerName</strong></div>
+            </div>
+
+            <form asp-controller="Review" asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="OrderId" />
+                <input type="hidden" asp-for="ProductId" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: @(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+
+                <!-- Star Rating Widget (R.6.1) -->
+                <div class="form-group" style="text-align: center; margin-bottom: 1.5rem;">
+                    <label class="form-label" style="font-size: 1rem; margin-bottom: 0.6rem;">Select Star Rating</label>
+                    <div class="star-rating-input" style="justify-content: center;">
+                        <input type="radio" id="star5" asp-for="Rating" value="5" checked />
+                        <label for="star5" title="5 stars - Outstanding">★</label>
+
+                        <input type="radio" id="star4" asp-for="Rating" value="4" />
+                        <label for="star4" title="4 stars - Great">★</label>
+
+                        <input type="radio" id="star3" asp-for="Rating" value="3" />
+                        <label for="star3" title="3 stars - Average">★</label>
+
+                        <input type="radio" id="star2" asp-for="Rating" value="2" />
+                        <label for="star2" title="2 stars - Poor">★</label>
+
+                        <input type="radio" id="star1" asp-for="Rating" value="1" />
+                        <label for="star1" title="1 star - Very Poor">★</label>
+                    </div>
+                    <span asp-validation-for="Rating" class="text-danger"></span>
+                </div>
+
+                <!-- Feedback Comment (R.6.2) -->
+                <div class="form-group">
+                    <label asp-for="Comment" class="form-label">Detailed Feedback &amp; Review</label>
+                    <textarea asp-for="Comment" class="form-control" rows="5" placeholder="Describe the quality, freshness, and delivery punctuality of the harvest..."></textarea>
+                    <span asp-validation-for="Comment" class="text-danger"></span>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                    <a asp-controller="Order" asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        🌟 Submit Review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,42 @@
+@model AgriDirect.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "User Login";
+}
+
+<div style="max-width: 400px; margin: 30px auto;">
+    <div class="box">
+        <div class="box-header">User Login</div>
+
+        <form asp-controller="Account" asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div asp-validation-summary="ModelOnly" class="text-error" style="margin-bottom: 10px;"></div>
+
+            <div class="form-group">
+                <label asp-for="Email" class="form-label">Email Address:</label>
+                <input asp-for="Email" class="form-control" placeholder="user@example.com" autofocus />
+                <span asp-validation-for="Email" class="text-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="form-label">Password:</label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label style="font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" asp-for="RememberMe" /> Remember me
+                </label>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+            </div>
+        </form>
+
+        <div style="margin-top: 15px; font-size: 13px; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
+            Don't have an account? <a asp-controller="Account" asp-action="Register">Register here</a>
+        </div>
+    </div>
+</div>

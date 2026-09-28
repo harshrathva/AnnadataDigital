@@ -1,0 +1,52 @@
+@model List<AgriDirect.Models.Product>
+@{
+    ViewData["Title"] = "My Products";
+}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <h1>My Produce Listings</h1>
+    <a asp-controller="Product" asp-action="Create" class="btn btn-primary">+ Add New Product</a>
+</div>
+
+<div class="box">
+    @if (!Model.Any())
+    {
+        <p style="color: #666;">You haven't listed any products yet. Click "+ Add New Product" to list one.</p>
+    }
+    else
+    {
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Harvest Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>@item.Name</strong></td>
+                        <td>@item.Category</td>
+                        <td>₹@item.Price.ToString("0.##") / @item.Unit</td>
+                        <td>@item.QuantityInStock @item.Unit</td>
+                        <td>@item.HarvestDate.ToString("yyyy-MM-dd")</td>
+                        <td><span class="tag">@item.Status</span></td>
+                        <td>
+                            <a asp-controller="Product" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm">Edit</a>
+                            <form asp-controller="Product" asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Delete this product?');" style="display: inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

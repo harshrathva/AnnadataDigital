@@ -1,0 +1,80 @@
+@model AgriDirect.Models.ViewModels.OrderCheckoutViewModel
+@{
+    ViewData["Title"] = "Order Checkout";
+}
+
+<div style="margin-bottom: 10px;">
+    <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.ProductId">&larr; Back to Product</a>
+</div>
+
+<h1>Order Checkout</h1>
+
+<div style="max-width: 600px; margin-top: 15px;">
+    <div class="box">
+        <div class="box-header">Order Details</div>
+
+        <form asp-controller="Order" asp-action="PlaceOrder" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ProductId" />
+            <div asp-validation-summary="ModelOnly" class="text-error" style="margin-bottom: 10px;"></div>
+
+            <table class="simple-table">
+                <tr>
+                    <th style="width: 35%;">Product:</th>
+                    <td><strong>@Model.Product?.Name</strong></td>
+                </tr>
+                <tr>
+                    <th>Price:</th>
+                    <td>₹@Model.UnitPrice.ToString("0.##") / @Model.Product?.Unit</td>
+                </tr>
+                <tr>
+                    <th>Farmer:</th>
+                    <td>@(Model.Product?.Farmer?.FarmName ?? Model.Product?.Farmer?.FullName)</td>
+                </tr>
+            </table>
+
+            <div class="form-group">
+                <label asp-for="Quantity" class="form-label">Order Quantity (@Model.Product?.Unit):</label>
+                <input asp-for="Quantity" class="form-control" type="number" step="1" min="1" max="@Model.Product?.QuantityInStock" id="checkoutQty" oninput="updateTotal()" />
+                <span asp-validation-for="Quantity" class="text-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DeliveryAddress" class="form-label">Delivery Address:</label>
+                <textarea asp-for="DeliveryAddress" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="DeliveryAddress" class="text-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="form-label">Contact Phone Number:</label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Payment Method:</label>
+                <label style="margin-right: 15px; cursor: pointer;">
+                    <input type="radio" asp-for="PaymentMethod" value="CashOnDelivery" checked /> Cash on Delivery
+                </label>
+                <label style="cursor: pointer;">
+                    <input type="radio" asp-for="PaymentMethod" value="UPI" /> Online UPI
+                </label>
+            </div>
+
+            <div style="border-top: 1px solid #ccc; padding-top: 10px; margin-top: 10px;">
+                <p><strong>Total Amount: </strong> <span id="totalText" style="font-size: 16px; font-weight: bold;">₹@Model.Subtotal.ToString("0.##")</span></p>
+                <button type="submit" class="btn btn-primary" style="margin-top: 5px;">Confirm and Place Order</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var price = @Model.UnitPrice;
+        function updateTotal() {
+            var q = parseFloat(document.getElementById('checkoutQty').value) || 0;
+            document.getElementById('totalText').innerText = '₹' + (q * price).toFixed(2);
+        }
+    </script>
+}

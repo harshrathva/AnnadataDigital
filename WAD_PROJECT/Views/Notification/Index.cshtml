@@ -1,0 +1,73 @@
+@model List<AgriDirect.Models.Notification>
+@{
+    ViewData["Title"] = "Notification Center";
+}
+
+<div style="max-width: 800px; margin: 1.5rem auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);">Notifications</h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Automated real-time updates on orders, deliveries, and payments</p>
+        </div>
+
+        @if (Model.Any(n => !n.IsRead))
+        {
+            <form asp-controller="Notification" asp-action="MarkAllAsRead" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline btn-sm">
+                    ✓ Mark All as Read
+                </button>
+            </form>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card" style="text-align: center; padding: 3.5rem 1.5rem;">
+            <span style="font-size: 3rem;">🔔</span>
+            <h3 style="margin: 0.8rem 0 0.3rem;">You're all caught up!</h3>
+            <p style="color: var(--text-muted);">No notifications to display right now.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <ul style="list-style: none;">
+                @foreach (var notif in Model)
+                {
+                    <li style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-subtle); background: @(notif.IsRead ? "#fff" : "#f0fdf4"); display: flex; gap: 1rem; align-items: flex-start;">
+                        <span style="font-size: 1.5rem;">
+                            @(notif.Type == "Order" ? "📦" : notif.Type == "Payment" ? "💳" : "🌾")
+                        </span>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                                <strong style="font-size: 0.98rem; color: var(--text-main);">@notif.Title</strong>
+                                <span style="font-size: 0.78rem; color: var(--text-muted);">@notif.CreatedAt.ToString("MMM dd, hh:mm tt")</span>
+                            </div>
+                            <p style="color: #475569; font-size: 0.88rem; margin-bottom: 0.6rem; line-height: 1.5;">@notif.Message</p>
+
+                            @if (!string.IsNullOrEmpty(notif.TargetUrl))
+                            {
+                                <form asp-controller="Notification" asp-action="MarkAsRead" asp-route-id="@notif.Id" method="post" style="display: inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                                        View Details &rarr;
+                                    </button>
+                                </form>
+                            }
+                            else if (!notif.IsRead)
+                            {
+                                <form asp-controller="Notification" asp-action="MarkAsRead" asp-route-id="@notif.Id" method="post" style="display: inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline btn-sm">
+                                        Mark as read
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>

@@ -1,0 +1,110 @@
+@using System.Security.Claims
+
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+    var userName = User.Identity?.Name ?? "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AgriDirect</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Simple Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a asp-controller="Marketplace" asp-action="Index" class="brand-title">
+                AgriDirect
+            </a>
+
+            <ul class="nav-menu">
+                <li>
+                    <a asp-controller="Marketplace" asp-action="Index">Marketplace</a>
+                </li>
+
+                @if (isAuthenticated)
+                {
+                    @if (userRole == "Consumer")
+                    {
+                        <li>
+                            <a asp-controller="Account" asp-action="ConsumerDashboard">Dashboard</a>
+                        </li>
+                    }
+                    else if (userRole == "Farmer")
+                    {
+                        <li>
+                            <a asp-controller="Account" asp-action="FarmerDashboard">Dashboard</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Product" asp-action="MyProducts">My Products</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Product" asp-action="Create">+ Add Product</a>
+                        </li>
+                    }
+                    else if (userRole == "Admin")
+                    {
+                        <li>
+                            <a asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Admin" asp-action="Users">Users</a>
+                        </li>
+                        <li>
+                            <a asp-controller="Admin" asp-action="Products">Products</a>
+                        </li>
+                    }
+                }
+            </ul>
+
+            <div class="nav-user">
+                @if (isAuthenticated)
+                {
+                    <a asp-controller="Account" asp-action="Profile" style="font-size: 13px; text-decoration: none;">
+                        @userName (@userRole)
+                    </a>
+                    <form asp-controller="Account" asp-action="Logout" method="post" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm">Sign Out</button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-sm">Sign In</a>
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-sm btn-primary">Register</a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Status Messages -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert">
+                <strong>Notice:</strong> @TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert" style="border-color: #b00; background: #fff0f0;">
+                <strong>Error:</strong> @TempData["Error"]
+            </div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <!-- Simple Footer -->
+    <footer class="footer">
+        <div>AgriDirect - Agricultural Direct Marketplace System (WAD Project)</div>
+    </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

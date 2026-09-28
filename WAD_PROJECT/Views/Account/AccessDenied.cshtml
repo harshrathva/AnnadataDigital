@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div style="max-width: 500px; margin: 4rem auto; text-align: center;">
+    <div class="card" style="padding: 3rem 2rem;">
+        <span style="font-size: 3.5rem;">🛑</span>
+        <h2 style="font-size: 1.5rem; font-weight: 800; color: #991b1b; margin: 1rem 0 0.5rem;">Access Denied</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            You do not have the required permissions or role to view this resource.
+        </p>
+        <div style="display: flex; gap: 0.8rem; justify-content: center;">
+            <a asp-controller="Marketplace" asp-action="Index" class="btn btn-primary">Return to Marketplace</a>
+            <a asp-controller="Account" asp-action="Login" class="btn btn-outline">Switch Account</a>
+        </div>
+    </div>
+</div>
