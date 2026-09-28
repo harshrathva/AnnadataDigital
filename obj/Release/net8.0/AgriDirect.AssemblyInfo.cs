@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AgriDirect")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e8bc6c28621e7fb5b47d9ad0ed7d1efedb721828")]
 [assembly: System.Reflection.AssemblyProductAttribute("AgriDirect")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AgriDirect")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
