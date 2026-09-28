@@ -7,11 +7,15 @@
     if (uidClaim != null) int.TryParse(uidClaim.Value, out currentUserId);
 
     bool isFarmer = (Model.FarmerId == currentUserId);
+<<<<<<< HEAD
     bool isBuyer = (Model.BuyerId == currentUserId);
+=======
+>>>>>>> c511733c30d8b94b9b4b623339461792b2c7f34a
     bool isAdmin = User.IsInRole("Admin");
 }
 
 <div style="margin-bottom: 10px;">
+<<<<<<< HEAD
     @if (isFarmer)
     {
         <a asp-controller="Order" asp-action="FarmerOrders">&larr; Back to Farm Orders</a>
@@ -24,12 +28,19 @@
     {
         <a asp-controller="Order" asp-action="History">&larr; Back to Order History</a>
     }
+=======
+    <a href="javascript:history.back()">&larr; Back</a>
+>>>>>>> c511733c30d8b94b9b4b623339461792b2c7f34a
 </div>
 
 <h1>Order #@Model.OrderNumber</h1>
 
+<<<<<<< HEAD
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
     <!-- Order Summary Box -->
+=======
+<div style="max-width: 650px; margin-top: 15px;">
+>>>>>>> c511733c30d8b94b9b4b623339461792b2c7f34a
     <div class="box">
         <div class="box-header">Order Summary</div>
 
@@ -42,6 +53,7 @@
                 <th>Order Date:</th>
                 <td>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
             </tr>
+<<<<<<< HEAD
             <tr>
                 <th>Order Status:</th>
                 <td><span class="tag">@Model.OrderStatus</span></td>
@@ -68,6 +80,16 @@
                         @(Model.Product?.Name ?? "Product #" + Model.ProductId)
                     </a>
                 </td>
+=======
+
+            <tr>
+                <th>Payment:</th>
+                <td>@Model.PaymentMethod (<span class="tag">@Model.PaymentStatus</span>)</td>
+            </tr>
+            <tr>
+                <th>Product:</th>
+                <td>@Model.Product?.Name</td>
+>>>>>>> c511733c30d8b94b9b4b623339461792b2c7f34a
             </tr>
             <tr>
                 <th>Quantity:</th>
@@ -91,6 +113,7 @@
             </tr>
             <tr>
                 <th>Farmer:</th>
+<<<<<<< HEAD
                 <td>@(Model.Farmer?.FarmName ?? Model.Farmer?.FullName) (@Model.Farmer?.PhoneNumber)</td>
             </tr>
         </table>
@@ -181,5 +204,15 @@
                 }
             </div>
         }
+=======
+                <td>@(Model.Farmer?.FarmName ?? Model.Farmer?.FullName)</td>
+            </tr>
+        </table>
+
+        <!-- Milestone 2 Notice -->
+        <div style="border-top: 1px solid #ccc; padding-top: 12px; margin-top: 12px; font-size: 13px; color: #555;">
+            <em>* Live order dispatch tracking (Pending, Shipped, Delivered) and farmer review submission are scheduled for Milestone 2.</em>
+        </div>
+>>>>>>> c511733c30d8b94b9b4b623339461792b2c7f34a
     </div>
 </div>
