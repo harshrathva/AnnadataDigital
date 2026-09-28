@@ -1,0 +1,88 @@
+@model AgriDirect.Models.User
+@{
+    ViewData["Title"] = "Consumer Dashboard";
+}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <div>
+        <h1 style="margin: 0;">Consumer Dashboard</h1>
+        <p style="color: #666; margin: 4px 0 0 0;">Welcome back, <strong>@Model.FullName</strong>. Direct consumer portal and fresh produce access.</p>
+    </div>
+    <div>
+        <a asp-controller="Marketplace" asp-action="Index" class="btn btn-primary">Browse Marketplace &rarr;</a>
+    </div>
+</div>
+
+<!-- Consumer Profile Box -->
+<div class="box">
+    <div class="box-header">My Profile &amp; Delivery Information</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+            <p><strong>Consumer Name:</strong> @Model.FullName</p>
+            <p><strong>Email Address:</strong> @Model.Email</p>
+            <p><strong>Contact Phone:</strong> @Model.PhoneNumber</p>
+        </div>
+        <div>
+            <p><strong>Delivery Address:</strong> @(string.IsNullOrEmpty(Model.Address) ? "No address saved" : Model.Address)</p>
+            <p><strong>Account Role:</strong> <span class="tag">@Model.Role</span></p>
+            <p><strong>Account Status:</strong> <span class="tag">@Model.Status</span></p>
+        </div>
+    </div>
+    <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px;">
+        <a asp-controller="Account" asp-action="Profile" class="btn btn-sm">Edit Profile Information</a>
+        <a asp-controller="Marketplace" asp-action="Index" class="btn btn-sm btn-primary">Browse Produce Catalog</a>
+    </div>
+</div>
+
+<!-- Marketplace Exploration Box -->
+<div class="box">
+    <div class="box-header">Fresh Produce Marketplace</div>
+    <p style="color: #444; font-size: 13px; line-height: 1.5; margin-bottom: 12px;">
+        Browse agricultural harvest listings directly from local farmers. You can view produce origins, harvest freshness dates, transparent pricing without middleman markups, and farmer contact details.
+    </p>
+    <a asp-controller="Marketplace" asp-action="Index" class="btn btn-primary">Go to Agricultural Marketplace &rarr;</a>
+</div>
+
+<!-- Recent Orders Box (R.5.3) -->
+<div class="box">
+    <div class="box-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>My Recent Orders (@Model.BuyerOrders.Count)</span>
+        <a asp-controller="Order" asp-action="History" class="btn btn-sm">View Full Order History &rarr;</a>
+    </div>
+
+    @if (!Model.BuyerOrders.Any())
+    {
+        <p style="color: #666; font-size: 13px;">You have not placed any farm orders yet.</p>
+        <a asp-controller="Marketplace" asp-action="Index" class="btn btn-primary btn-sm">Browse Marketplace to Order</a>
+    }
+    else
+    {
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Produce</th>
+                    <th>Farmer</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.BuyerOrders.OrderByDescending(o => o.CreatedAt).Take(5))
+                {
+                    <tr>
+                        <td><strong>@order.OrderNumber</strong></td>
+                        <td>@(order.Product?.Name ?? "Produce")</td>
+                        <td>@(order.Farmer?.FarmName ?? order.Farmer?.FullName)</td>
+                        <td>₹@order.TotalAmount.ToString("0.##")</td>
+                        <td><span class="tag">@order.OrderStatus</span></td>
+                        <td>
+                            <a asp-controller="Order" asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm">Track / Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

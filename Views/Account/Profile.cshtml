@@ -1,0 +1,81 @@
+@model AgriDirect.Models.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h1>Account Profile</h1>
+
+<div style="max-width: 550px; margin-top: 15px;">
+    <div class="box">
+        <div class="box-header">Profile Details (Role: @Model.Role)</div>
+
+        <form asp-controller="Account" asp-action="Profile" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Email" />
+            <input type="hidden" asp-for="Role" />
+
+            <div class="form-group">
+                <label asp-for="FullName" class="form-label">Full Name:</label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email:</label>
+                <input value="@Model.Email" class="form-control" disabled style="background: #eee;" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="form-label">Phone Number:</label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Address" class="form-label">Address:</label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-error"></span>
+            </div>
+
+            @if (Model.Role == "Farmer")
+            {
+                <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 12px; background: #fafafa;">
+                    <div style="font-weight: bold; margin-bottom: 8px;">Farm Information</div>
+                    <div class="form-group">
+                        <label asp-for="FarmName" class="form-label">Farm Name:</label>
+                        <input asp-for="FarmName" class="form-control" />
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label asp-for="FarmLocation" class="form-label">Farm Location:</label>
+                        <input asp-for="FarmLocation" class="form-control" />
+                    </div>
+                </div>
+            }
+
+            <div style="margin-top: 15px;">
+                <button type="submit" class="btn btn-primary">Save Profile</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Account Lifecycle Box (R.7.4) -->
+    @if (Model.Role != "Admin")
+    {
+        <div class="box" style="margin-top: 15px; border-color: #999;">
+            <div class="box-header">Account Management (R.7.4)</div>
+            <p style="color: #666; font-size: 13px;">Manage your active account status or request account deactivation/deletion.</p>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <form asp-controller="Account" asp-action="Deactivate" method="post" onsubmit="return confirm('Are you sure you want to deactivate your account?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm">Deactivate Account</button>
+                </form>
+
+                <form asp-controller="Account" asp-action="DeleteAccount" method="post" onsubmit="return confirm('Are you sure you want to delete your account permanently? This cannot be undone.');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm" style="color: #b00; border-color: #b00;">Delete Account</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>

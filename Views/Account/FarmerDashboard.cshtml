@@ -1,0 +1,127 @@
+@model AgriDirect.Models.User
+@{
+    ViewData["Title"] = "Farmer Dashboard";
+}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <div>
+        <h1 style="margin: 0;">Farmer Dashboard</h1>
+        <p style="color: #666; margin: 4px 0 0 0;">Welcome back, <strong>@Model.FullName</strong>. Farm management and harvest listing overview.</p>
+    </div>
+    <div>
+        <a asp-controller="Product" asp-action="Create" class="btn btn-primary">+ Add New Product</a>
+    </div>
+</div>
+
+<!-- Farmer Profile Summary Box -->
+<div class="box">
+    <div class="box-header">Farm &amp; Producer Profile</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+            <p><strong>Farmer Name:</strong> @Model.FullName</p>
+            <p><strong>Email Address:</strong> @Model.Email</p>
+            <p><strong>Contact Phone:</strong> @Model.PhoneNumber</p>
+        </div>
+        <div>
+            <p><strong>Farm / Business:</strong> @(Model.FarmName ?? "Not specified")</p>
+            <p><strong>Farm Location:</strong> @(Model.FarmLocation ?? Model.Address)</p>
+            <p><strong>Account Status:</strong> <span class="tag">@Model.Status</span></p>
+        </div>
+    </div>
+    <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px;">
+        <a asp-controller="Account" asp-action="Profile" class="btn btn-sm">Edit Profile Details</a>
+        <a asp-controller="Product" asp-action="MyProducts" class="btn btn-sm">Manage All My Products</a>
+        <a asp-controller="Marketplace" asp-action="Index" class="btn btn-sm">Browse Public Marketplace</a>
+    </div>
+</div>
+
+<!-- My Listed Produce Box -->
+<div class="box">
+    <div class="box-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>My Listed Produce in Marketplace (@Model.Products.Count)</span>
+        <a asp-controller="Product" asp-action="Create" class="btn btn-sm btn-primary">+ Add Produce</a>
+    </div>
+
+    @if (!Model.Products.Any())
+    {
+        <p style="color: #666; padding: 10px 0;">You have not listed any agricultural produce yet. Click <strong>+ Add Produce</strong> above to list your harvest in the marketplace.</p>
+    }
+    else
+    {
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Available Stock</th>
+                    <th>Harvest Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var prod in Model.Products)
+                {
+                    <tr>
+                        <td><strong>@prod.Name</strong></td>
+                        <td>@prod.Category</td>
+                        <td>₹@prod.Price.ToString("0.##") / @prod.Unit</td>
+                        <td>@prod.QuantityInStock @prod.Unit</td>
+                        <td>@prod.HarvestDate.ToString("yyyy-MM-dd")</td>
+                        <td><span class="tag">@prod.Status</span></td>
+                        <td>
+                            <a asp-controller="Product" asp-action="Edit" asp-route-id="@prod.Id" class="btn btn-sm">Edit / Update</a>
+                            <a asp-controller="Product" asp-action="Details" asp-route-id="@prod.Id" class="btn btn-sm">View Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<!-- Incoming Customer Orders Box (R.5.2 & R.5.3) -->
+<div class="box">
+    <div class="box-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Incoming Customer Orders (@Model.FarmerOrders.Count)</span>
+        <a asp-controller="Order" asp-action="FarmerOrders" class="btn btn-sm">Manage All Orders &rarr;</a>
+    </div>
+
+    @if (!Model.FarmerOrders.Any())
+    {
+        <p style="color: #666; font-size: 13px;">No orders received yet. Keep your harvest inventory updated to attract buyers.</p>
+    }
+    else
+    {
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Produce</th>
+                    <th>Buyer</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.FarmerOrders.OrderByDescending(o => o.CreatedAt).Take(5))
+                {
+                    <tr>
+                        <td><strong>@order.OrderNumber</strong></td>
+                        <td>@(order.Product?.Name ?? "Produce")</td>
+                        <td>@order.Buyer?.FullName</td>
+                        <td>@order.Quantity @(order.Product?.Unit ?? "kg")</td>
+                        <td>₹@order.TotalAmount.ToString("0.##")</td>
+                        <td><span class="tag">@order.OrderStatus</span></td>
+                        <td>
+                            <a asp-controller="Order" asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-primary">Fulfill / Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

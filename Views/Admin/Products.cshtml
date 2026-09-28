@@ -1,0 +1,66 @@
+@model List<AgriDirect.Models.Product>
+@{
+    ViewData["Title"] = "Product Listings Moderation";
+}
+
+<div style="margin-bottom: 10px;">
+    <a asp-controller="Admin" asp-action="Dashboard">&larr; Back to Dashboard</a>
+</div>
+
+<h1>Product Catalog Moderation</h1>
+
+<div class="box">
+    <table class="simple-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Farmer</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>#@p.Id</td>
+                    <td><strong>@p.Name</strong></td>
+                    <td>@p.Category</td>
+                    <td>@(p.Farmer?.FarmName ?? p.Farmer?.FullName)</td>
+                    <td>₹@p.Price.ToString("0.##") / @p.Unit</td>
+                    <td>@p.QuantityInStock @p.Unit</td>
+                    <td><span class="tag">@p.Status</span></td>
+                    <td>
+                        @if (p.Status != "Approved")
+                        {
+                            <form asp-controller="Admin" asp-action="UpdateProductStatus" method="post" style="display: inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@p.Id" />
+                                <input type="hidden" name="status" value="Approved" />
+                                <button type="submit" class="btn btn-sm">Approve</button>
+                            </form>
+                        }
+                        @if (p.Status != "Removed")
+                        {
+                            <form asp-controller="Admin" asp-action="UpdateProductStatus" method="post" style="display: inline;" onsubmit="return confirm('Remove product from marketplace?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@p.Id" />
+                                <input type="hidden" name="status" value="Removed" />
+                                <button type="submit" class="btn btn-sm">Remove</button>
+                            </form>
+                        }
+                        <form asp-controller="Admin" asp-action="DeleteProduct" method="post" style="display: inline;" onsubmit="return confirm('Permanently delete product?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="productId" value="@p.Id" />
+                            <button type="submit" class="btn btn-sm" style="color: #b00;">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

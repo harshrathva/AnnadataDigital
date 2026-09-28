@@ -1,0 +1,107 @@
+@model List<AgriDirect.Models.Order>
+@{
+    ViewData["Title"] = "Orders & Payments";
+    var currentOrderStatus = ViewBag.CurrentOrderStatus as string;
+    var currentPaymentStatus = ViewBag.CurrentPaymentStatus as string;
+}
+
+<div style="margin-bottom: 10px;">
+    <a asp-controller="Admin" asp-action="Dashboard">&larr; Back to Dashboard</a>
+</div>
+
+<h1>Order &amp; Payment Management (Admin)</h1>
+
+<!-- Filter Bar -->
+<div class="box">
+    <form asp-controller="Admin" asp-action="Orders" method="get">
+        <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 140px;">
+                <label class="form-label">Order Status:</label>
+                <select name="orderStatus" class="form-select">
+                    <option value="All">All Order Statuses</option>
+                    <option value="Pending" selected="@(currentOrderStatus == "Pending")">Pending</option>
+                    <option value="Accepted" selected="@(currentOrderStatus == "Accepted")">Accepted</option>
+                    <option value="Packed" selected="@(currentOrderStatus == "Packed")">Packed</option>
+                    <option value="Shipped" selected="@(currentOrderStatus == "Shipped")">Shipped</option>
+                    <option value="Delivered" selected="@(currentOrderStatus == "Delivered")">Delivered</option>
+                    <option value="Cancelled" selected="@(currentOrderStatus == "Cancelled")">Cancelled</option>
+                </select>
+            </div>
+
+            <div style="flex: 1; min-width: 140px;">
+                <label class="form-label">Payment Status:</label>
+                <select name="paymentStatus" class="form-select">
+                    <option value="All">All Payment Statuses</option>
+                    <option value="Pending" selected="@(currentPaymentStatus == "Pending")">Pending</option>
+                    <option value="Paid" selected="@(currentPaymentStatus == "Paid")">Paid</option>
+                    <option value="Failed" selected="@(currentPaymentStatus == "Failed")">Failed</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary" style="height: 31px;">Filter</button>
+                <a asp-controller="Admin" asp-action="Orders" class="btn" style="height: 31px; display: inline-flex; align-items: center;">Reset</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Orders Table -->
+<div class="box">
+    <div class="box-header">All Platform Orders (@Model.Count)</div>
+
+    @if (!Model.Any())
+    {
+        <p style="color: #666; padding: 10px 0;">No orders matching current filter criteria.</p>
+    }
+    else
+    {
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Buyer</th>
+                    <th>Farmer</th>
+                    <th>Amount</th>
+                    <th>Order Status</th>
+                    <th>Payment Status</th>
+                    <th>Manage Payment (R.7.3)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td>
+                            <a asp-controller="Order" asp-action="Details" asp-route-id="@order.Id">
+                                <strong>@order.OrderNumber</strong>
+                            </a>
+                        </td>
+                        <td>@order.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td>@(order.Product?.Name ?? "Product #" + order.ProductId)</td>
+                        <td>@order.Buyer?.FullName</td>
+                        <td>@(order.Farmer?.FarmName ?? order.Farmer?.FullName)</td>
+                        <td>₹@order.TotalAmount.ToString("0.##")</td>
+                        <td><span class="tag">@order.OrderStatus</span></td>
+                        <td><span class="tag">@order.PaymentStatus</span></td>
+                        <td>
+                            <form asp-controller="Admin" asp-action="UpdatePaymentStatus" method="post" style="display: inline-flex; gap: 4px;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@order.Id" />
+                                <select name="paymentStatus" class="form-select" style="padding: 1px 4px; font-size: 11px; width: 85px;">
+                                    <option value="Pending" selected="@(order.PaymentStatus == "Pending")">Pending</option>
+                                    <option value="Paid" selected="@(order.PaymentStatus == "Paid")">Paid</option>
+                                    <option value="Failed" selected="@(order.PaymentStatus == "Failed")">Failed</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm">Set</button>
+                            </form>
+                            <a asp-controller="Order" asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm" style="margin-left: 2px;">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

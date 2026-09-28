@@ -1,0 +1,115 @@
+@model AgriDirect.Models.ViewModels.ReportsViewModel
+@{
+    ViewData["Title"] = "Platform Reports";
+}
+
+<div style="margin-bottom: 10px;">
+    <a asp-controller="Admin" asp-action="Dashboard">&larr; Back to Dashboard</a>
+</div>
+
+<h1>Platform Reports &amp; Analytics</h1>
+
+<div class="box">
+    <div class="box-header">Produce Catalog by Category</div>
+    <table class="simple-table">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th style="text-align: right;">Listed Items</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var kvp in Model.ProductsByCategory)
+            {
+                <tr>
+                    <td><strong>@kvp.Key</strong></td>
+                    <td style="text-align: right;"><span class="tag">@kvp.Value products</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="box">
+    <div class="box-header">Sales &amp; Financial Summary</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+        <div style="border: 1px solid #ddd; padding: 10px; background: #fafafa;">
+            <div style="font-size: 11px; color: #666;">TOTAL GMV SALES</div>
+            <div style="font-size: 20px; font-weight: bold; margin-top: 4px;">₹@Model.TotalSalesRevenue.ToString("N2")</div>
+        </div>
+        <div style="border: 1px solid #ddd; padding: 10px; background: #fafafa;">
+            <div style="font-size: 11px; color: #666;">COMPLETED ORDERS</div>
+            <div style="font-size: 20px; font-weight: bold; margin-top: 4px; color: #008800;">@Model.CompletedOrdersCount</div>
+        </div>
+        <div style="border: 1px solid #ddd; padding: 10px; background: #fafafa;">
+            <div style="font-size: 11px; color: #666;">ACTIVE / PENDING ORDERS</div>
+            <div style="font-size: 20px; font-weight: bold; margin-top: 4px;">@Model.PendingOrdersCount</div>
+        </div>
+        <div style="border: 1px solid #ddd; padding: 10px; background: #fafafa;">
+            <div style="font-size: 11px; color: #666;">CANCELLED ORDERS</div>
+            <div style="font-size: 20px; font-weight: bold; margin-top: 4px; color: #b00;">@Model.CancelledOrdersCount</div>
+        </div>
+    </div>
+</div>
+
+<div class="box">
+    <div class="box-header">Sales Revenue by Category</div>
+    @if (!Model.SalesByCategory.Any())
+    {
+        <p style="color: #666; font-size: 13px;">No paid sales data recorded yet.</p>
+    }
+    else
+    {
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th style="text-align: right;">Total Sales (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var sc in Model.SalesByCategory)
+                {
+                    <tr>
+                        <td><strong>@sc.Key</strong></td>
+                        <td style="text-align: right;">₹@sc.Value.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="box">
+    <div class="box-header">Top Farmer Producers by Revenue</div>
+    @if (!Model.TopFarmers.Any())
+    {
+        <p style="color: #666; font-size: 13px;">No farmer order activity yet.</p>
+    }
+    else
+    {
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>Farmer Name</th>
+                    <th>Farm / Location</th>
+                    <th style="text-align: right;">Fulfilled Orders</th>
+                    <th style="text-align: right;">Total Revenue</th>
+                    <th style="text-align: right;">Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tf in Model.TopFarmers)
+                {
+                    <tr>
+                        <td><strong>@tf.FarmerName</strong></td>
+                        <td>@tf.FarmName</td>
+                        <td style="text-align: right;">@tf.TotalOrders</td>
+                        <td style="text-align: right;"><strong>₹@tf.TotalRevenue.ToString("N2")</strong></td>
+                        <td style="text-align: right;">★ @tf.AverageRating.ToString("0.#")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

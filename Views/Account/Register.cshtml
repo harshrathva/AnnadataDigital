@@ -1,0 +1,105 @@
+@model AgriDirect.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "User Registration";
+}
+
+<div style="max-width: 500px; margin: 25px auto;">
+    <div class="box">
+        <div class="box-header">User Registration </div>
+
+        <form asp-controller="Account" asp-action="Register" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-error" style="margin-bottom: 10px;"></div>
+
+            <!-- Role Selection -->
+            <div class="form-group">
+                <label class="form-label">Register As:</label>
+                <label style="margin-right: 15px; cursor: pointer;">
+                    <input type="radio" asp-for="Role" value="Consumer" checked onchange="toggleFarmer()" /> Consumer / Buyer
+                </label>
+                <label style="margin-right: 15px; cursor: pointer;">
+                    <input type="radio" asp-for="Role" value="Farmer" onchange="toggleFarmer()" /> Farmer / Producer
+                </label>
+                <label style="cursor: pointer;">
+                    <input type="radio" asp-for="Role" value="Admin" onchange="toggleFarmer()" /> Administrator
+                </label>
+                <span asp-validation-for="Role" class="text-error"></span>
+            </div>
+
+            <!-- Full Name -->
+            <div class="form-group">
+                <label asp-for="FullName" class="form-label">Full Name:</label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-error"></span>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label asp-for="Email" class="form-label">Email Address:</label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-error"></span>
+            </div>
+
+            <!-- Phone -->
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="form-label">Phone Number:</label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-error"></span>
+            </div>
+
+            <!-- Address -->
+            <div class="form-group">
+                <label asp-for="Address" class="form-label">Address:</label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-error"></span>
+            </div>
+
+            <!-- Farmer Specific Fields -->
+            <div id="farmerBox" style="display: none; border: 1px solid #999; padding: 10px; margin-bottom: 12px; background: #f9f9f9;">
+                <div style="font-weight: bold; margin-bottom: 8px;">Farmer Information</div>
+                <div class="form-group">
+                    <label asp-for="FarmName" class="form-label">Farm / Business Name:</label>
+                    <input asp-for="FarmName" class="form-control" placeholder="e.g. Sharma Farms" />
+                    <span asp-validation-for="FarmName" class="text-error"></span>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label asp-for="FarmLocation" class="form-label">Farm Location:</label>
+                    <input asp-for="FarmLocation" class="form-control" placeholder="e.g. Pune, MH" />
+                    <span asp-validation-for="FarmLocation" class="text-error"></span>
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label asp-for="Password" class="form-label">Password:</label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ConfirmPassword" class="form-label">Confirm Password:</label>
+                <input asp-for="ConfirmPassword" class="form-control" type="password" />
+                <span asp-validation-for="ConfirmPassword" class="text-error"></span>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+            </div>
+        </form>
+
+        <div style="margin-top: 15px; font-size: 13px; text-align: center;">
+            Already registered? <a asp-controller="Account" asp-action="Login">Sign in here</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleFarmer() {
+            var role = document.querySelector('input[name="Role"]:checked').value;
+            var box = document.getElementById('farmerBox');
+            box.style.display = (role === 'Farmer') ? 'block' : 'none';
+        }
+        toggleFarmer();
+    </script>
+}

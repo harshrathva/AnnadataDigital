@@ -1,0 +1,71 @@
+@model List<AgriDirect.Models.Order>
+@{
+    ViewData["Title"] = "Order History";
+}
+
+<div style="margin-bottom: 10px;">
+    <a asp-controller="Account" asp-action="ConsumerDashboard">&larr; Back to Dashboard</a>
+</div>
+
+<h1>My Order History</h1>
+
+<div class="box">
+    <div class="box-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>All Past Orders (@Model.Count)</span>
+        <a asp-controller="Marketplace" asp-action="Index" class="btn btn-sm btn-primary">+ Browse Marketplace</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <p style="color: #666; padding: 10px 0;">You have not placed any orders yet. Browse our marketplace to order fresh agricultural produce directly from verified farmers.</p>
+        <a asp-controller="Marketplace" asp-action="Index" class="btn btn-primary">Browse Marketplace &rarr;</a>
+    }
+    else
+    {
+        <table class="simple-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Farmer</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                    <th>Order Status</th>
+                    <th>Payment</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td><strong>@order.OrderNumber</strong></td>
+                        <td>@order.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            <a asp-controller="Product" asp-action="Details" asp-route-id="@order.ProductId">
+                                @(order.Product?.Name ?? "Product #" + order.ProductId)
+                            </a>
+                        </td>
+                        <td>@(order.Farmer?.FarmName ?? order.Farmer?.FullName)</td>
+                        <td>@order.Quantity @(order.Product?.Unit ?? "unit")</td>
+                        <td><strong>₹@order.TotalAmount.ToString("0.##")</strong></td>
+                        <td>
+                            <span class="tag">@order.OrderStatus</span>
+                        </td>
+                        <td>
+                            <span class="tag">@order.PaymentStatus</span>
+                        </td>
+                        <td>
+                            <a asp-controller="Order" asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm">Track / Details</a>
+                            @if (order.OrderStatus == "Delivered" && !order.Reviews.Any())
+                            {
+                                <a asp-controller="Review" asp-action="Create" asp-route-orderId="@order.Id" class="btn btn-sm btn-primary">Write Review</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

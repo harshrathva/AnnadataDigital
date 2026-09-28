@@ -1,0 +1,146 @@
+@model AgriDirect.Models.ViewModels.MarketplaceFilterViewModel
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Marketplace";
+    var currentUserId = 0;
+    var uidClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+    if (uidClaim != null) int.TryParse(uidClaim.Value, out currentUserId);
+}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <div>
+        <h1>Agricultural Marketplace</h1>
+        <p style="color: #555;">Browse available fresh produce listed by verified farmers.</p>
+    </div>
+    @if (User.IsInRole("Farmer"))
+    {
+        <div>
+            <a asp-controller="Product" asp-action="Create" class="btn btn-primary">+ Add New Product</a>
+        </div>
+    }
+</div>
+
+<!-- Search & Filter Box (R.3.2 & R.3.3) -->
+<div class="box">
+    <form asp-controller="Marketplace" asp-action="Index" method="get">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; align-items: flex-end;">
+            <div>
+                <label class="form-label">Search Keyword:</label>
+                <input type="text" name="keyword" value="@Model.Keyword" class="form-control" placeholder="Crop, farm, farmer..." />
+            </div>
+
+            <div>
+                <label class="form-label">Category:</label>
+                <select name="category" class="form-select">
+                    <option value="All">All Categories</option>
+                    @foreach (var cat in Model.AvailableCategories)
+                    {
+                        <option value="@cat" selected="@(Model.Category == cat)">@cat</option>
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label class="form-label">Location / District:</label>
+                <select name="location" class="form-select">
+                    <option value="All">All Locations</option>
+                    @foreach (var loc in Model.AvailableLocations)
+                    {
+                        <option value="@loc" selected="@(Model.Location == loc)">@loc</option>
+                    }
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 5px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Min ₹:</label>
+                    <input type="number" name="minPrice" value="@Model.MinPrice" class="form-control" placeholder="0" min="0" step="1" />
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Max ₹:</label>
+                    <input type="number" name="maxPrice" value="@Model.MaxPrice" class="form-control" placeholder="1000" min="0" step="1" />
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center; padding-bottom: 5px;">
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                    <input type="checkbox" name="onlyAvailable" value="true" checked="@Model.OnlyAvailable" /> In Stock Only
+                </label>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary" style="height: 31px;">Search / Filter</button>
+                <a asp-controller="Marketplace" asp-action="Index" class="btn" style="height: 31px; display: inline-flex; align-items: center;">Reset</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<h2>Produce Listings (@Model.Products.Count available)</h2>
+
+@if (!Model.Products.Any())
+{
+    <p style="color: #666; padding: 15px 0;">No products match your search or filter criteria. Try resetting filters.</p>
+}
+else
+{
+    <div class="marketplace-grid">
+        @foreach (var item in Model.Products)
+        {
+            <div class="product-item-box">
+                @if (!string.IsNullOrWhiteSpace(item.ImageUrl) && item.ImageUrl != "/images/default-product.svg")
+                {
+                    <div style="height: 100px; text-align: center; margin-bottom: 8px; overflow: hidden; background: #eee;">
+                        <img src="@item.ImageUrl" alt="@item.Name" style="width: 100%; height: 100%; object-fit: cover;" />
+                    </div>
+                }
+                else
+                {
+                    <div class="product-item-img-placeholder">
+                        🌱 @item.Name
+                    </div>
+                }
+
+                <div class="product-item-title">
+                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id">
+                        @item.Name
+                    </a>
+                </div>
+
+                <div class="product-item-detail">
+                    Category: <span class="tag">@item.Category</span>
+                </div>
+
+                <div class="product-item-detail">
+                    Farmer: @(item.Farmer?.FarmName ?? item.Farmer?.FullName)
+                </div>
+
+                <div class="product-item-detail">
+                    Stock: @(item.QuantityInStock > 0 ? $"{item.QuantityInStock} {item.Unit}" : "Sold Out")
+                </div>
+
+                <div class="product-item-price">
+                    ₹@item.Price.ToString("0.##") / @item.Unit
+                </div>
+
+                <div style="margin-top: 8px; display: flex; gap: 5px;">
+                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm" style="flex: 1; text-align: center;">
+                        Details
+                    </a>
+                    @if (item.QuantityInStock > 0 && !(User.IsInRole("Farmer") && item.FarmerId == currentUserId))
+                    {
+                        <a asp-controller="Order" asp-action="Checkout" asp-route-productId="@item.Id" class="btn btn-sm btn-primary" style="flex: 1; text-align: center;">
+                            Order
+                        </a>
+                    }
+                    @if (User.IsInRole("Farmer") && item.FarmerId == currentUserId)
+                    {
+                        <a asp-controller="Product" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm" style="text-align: center;">
+                            Edit
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}

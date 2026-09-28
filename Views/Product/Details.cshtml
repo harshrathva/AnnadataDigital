@@ -1,0 +1,153 @@
+@model AgriDirect.Models.Product
+@using System.Security.Claims
+@{
+    ViewData["Title"] = Model.Name;
+    var currentUserId = 0;
+    var uidClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+    if (uidClaim != null) int.TryParse(uidClaim.Value, out currentUserId);
+
+    bool isOwnerFarmer = (Model.FarmerId == currentUserId);
+    bool isConsumer = User.IsInRole("Consumer") || !User.Identity?.IsAuthenticated == true;
+}
+
+<div style="margin-bottom: 10px;">
+    <a asp-controller="Marketplace" asp-action="Index">&larr; Back to Marketplace</a>
+</div>
+
+<h1>@Model.Name</h1>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+    <!-- Product Details Box -->
+    <div class="box">
+        <div class="box-header">Produce Details</div>
+
+        <!-- Product Image Display (R.2.4 & R.2.5) -->
+        <div style="margin-bottom: 12px; text-align: center;">
+            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl) && Model.ImageUrl != "/images/default-product.svg")
+            {
+                <img src="@Model.ImageUrl" alt="@Model.Name" style="max-width: 100%; max-height: 220px; object-fit: cover; border: 1px solid #ccc;" />
+            }
+            else
+            {
+                <div class="product-item-img-placeholder" style="height: 120px;">
+                    🌱 Fresh @Model.Name
+                </div>
+            }
+
+            @if (Model.AllImageUrls.Count > 1)
+            {
+                <div style="display: flex; gap: 8px; margin-top: 8px; justify-content: center; flex-wrap: wrap;">
+                    @foreach (var img in Model.AllImageUrls)
+                    {
+                        <img src="@img" alt="Produce image" style="width: 50px; height: 50px; object-fit: cover; border: 1px solid #aaa;" />
+                    }
+                </div>
+            }
+        </div>
+
+        <table class="simple-table">
+            <tr>
+                <th style="width: 35%;">Category:</th>
+                <td><span class="tag">@Model.Category</span></td>
+            </tr>
+            <tr>
+                <th>Price:</th>
+                <td><strong>₹@Model.Price.ToString("0.##")</strong> per @Model.Unit</td>
+            </tr>
+            <tr>
+                <th>Available Quantity:</th>
+                <td>
+                    @if (Model.QuantityInStock > 0)
+                    {
+                        <span>@Model.QuantityInStock @Model.Unit (In Stock)</span>
+                    }
+                    else
+                    {
+                        <span style="color: #b00; font-weight: bold;">Out of Stock</span>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <th>Harvest Date:</th>
+                <td>@Model.HarvestDate.ToString("yyyy-MM-dd")</td>
+            </tr>
+            <tr>
+                <th>Availability:</th>
+                <td><span class="tag">@(Model.QuantityInStock > 0 ? "Available Now" : "Sold Out")</span></td>
+            </tr>
+        </table>
+
+        <div style="margin-top: 10px;">
+            <strong>Product Description:</strong>
+            <p style="margin-top: 5px; color: #333;">@(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided." : Model.Description)</p>
+        </div>
+
+        @if (isOwnerFarmer)
+        {
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ccc; display: flex; gap: 10px;">
+                <a asp-controller="Product" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-primary">Edit This Product</a>
+                <a asp-controller="Product" asp-action="MyProducts" class="btn btn-sm">Manage My Products</a>
+            </div>
+        }
+    </div>
+
+    <!-- Farmer Information & Ordering Box -->
+    <div>
+        <div class="box">
+            <div class="box-header">Farmer / Origin Information</div>
+            <p><strong>Farmer Name:</strong> @Model.Farmer?.FullName</p>
+            <p><strong>Farm Name:</strong> @(Model.Farmer?.FarmName ?? "Local Direct Farm")</p>
+            <p><strong>Location:</strong> @(Model.Farmer?.FarmLocation ?? Model.Farmer?.Address)</p>
+            <p><strong>Contact:</strong> @Model.Farmer?.PhoneNumber</p>
+            <p><strong>Farmer Rating:</strong> ★ @(Model.Farmer?.AverageRating.ToString("0.#") ?? "5.0") (@(Model.Farmer?.TotalRatingsCount ?? 0) ratings)</p>
+        </div>
+
+        <!-- Order Placement Box (R.5.1) -->
+        <div class="box">
+            <div class="box-header">Order Direct from Farm</div>
+            @if (Model.QuantityInStock > 0)
+            {
+                <p style="color: #333; font-size: 13px; line-height: 1.5;">
+                    Purchase directly from @(Model.Farmer?.FarmName ?? Model.Farmer?.FullName) with transparent pricing and direct delivery.
+                </p>
+                @if (isOwnerFarmer)
+                {
+                    <p style="color: #777; font-size: 13px;"><em>You are viewing your own listed harvest.</em></p>
+                }
+                else
+                {
+                    <a asp-controller="Order" asp-action="Checkout" asp-route-productId="@Model.Id" class="btn btn-primary" style="display: block; text-align: center; padding: 8px;">
+                        🛒 Order / Buy Now &rarr;
+                    </a>
+                }
+            }
+            else
+            {
+                <p style="color: #b00; font-weight: bold;">This harvest produce is currently sold out.</p>
+            }
+        </div>
+
+        <!-- Reviews & Ratings List Box (R.6.1 & R.6.2) -->
+        <div class="box">
+            <div class="box-header">Buyer Reviews &amp; Ratings (@Model.Reviews.Count)</div>
+            @if (!Model.Reviews.Any())
+            {
+                <p style="color: #666; font-size: 13px;">No customer reviews for this harvest item yet.</p>
+            }
+            else
+            {
+                @foreach (var review in Model.Reviews)
+                {
+                    <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>@review.Buyer?.FullName</strong>
+                            <span style="color: #d97706;">@string.Concat(Enumerable.Repeat("★", review.Rating)) (@review.Rating/5)</span>
+                        </div>
+                        <p style="margin: 4px 0; color: #333; font-size: 13px;">"@review.Comment"</p>
+                        <span style="font-size: 11px; color: #777;">@review.CreatedAt.ToString("yyyy-MM-dd")</span>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

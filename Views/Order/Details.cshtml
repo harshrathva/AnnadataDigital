@@ -1,0 +1,185 @@
+@model AgriDirect.Models.Order
+@using System.Security.Claims
+@{
+    ViewData["Title"] = $"Order #{Model.OrderNumber}";
+    var currentUserId = 0;
+    var uidClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+    if (uidClaim != null) int.TryParse(uidClaim.Value, out currentUserId);
+
+    bool isFarmer = (Model.FarmerId == currentUserId);
+    bool isBuyer = (Model.BuyerId == currentUserId);
+    bool isAdmin = User.IsInRole("Admin");
+}
+
+<div style="margin-bottom: 10px;">
+    @if (isFarmer)
+    {
+        <a asp-controller="Order" asp-action="FarmerOrders">&larr; Back to Farm Orders</a>
+    }
+    else if (isAdmin)
+    {
+        <a asp-controller="Admin" asp-action="Orders">&larr; Back to All Orders</a>
+    }
+    else
+    {
+        <a asp-controller="Order" asp-action="History">&larr; Back to Order History</a>
+    }
+</div>
+
+<h1>Order #@Model.OrderNumber</h1>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+    <!-- Order Summary Box -->
+    <div class="box">
+        <div class="box-header">Order Summary</div>
+
+        <table class="simple-table">
+            <tr>
+                <th style="width: 35%;">Order Number:</th>
+                <td><strong>@Model.OrderNumber</strong></td>
+            </tr>
+            <tr>
+                <th>Order Date:</th>
+                <td>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+            </tr>
+            <tr>
+                <th>Order Status:</th>
+                <td><span class="tag">@Model.OrderStatus</span></td>
+            </tr>
+            <tr>
+                <th>Payment:</th>
+                <td>
+                    @Model.PaymentMethod (<span class="tag">@Model.PaymentStatus</span>)
+                    @if ((isFarmer || isAdmin) && Model.PaymentStatus != "Paid")
+                    {
+                        <form asp-controller="Order" asp-action="ConfirmPayment" method="post" style="display: inline; margin-left: 5px;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@Model.Id" />
+                            <input type="hidden" name="paymentStatus" value="Paid" />
+                            <button type="submit" class="btn btn-sm">Mark as Paid</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <th>Product:</th>
+                <td>
+                    <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.ProductId">
+                        @(Model.Product?.Name ?? "Product #" + Model.ProductId)
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <th>Quantity:</th>
+                <td>@Model.Quantity @Model.Product?.Unit</td>
+            </tr>
+            <tr>
+                <th>Unit Price:</th>
+                <td>₹@Model.UnitPrice.ToString("0.##")</td>
+            </tr>
+            <tr>
+                <th>Total Amount:</th>
+                <td><strong>₹@Model.TotalAmount.ToString("0.##")</strong></td>
+            </tr>
+            <tr>
+                <th>Buyer:</th>
+                <td>@Model.Buyer?.FullName (@Model.Buyer?.PhoneNumber)</td>
+            </tr>
+            <tr>
+                <th>Delivery Address:</th>
+                <td>@Model.DeliveryAddress</td>
+            </tr>
+            <tr>
+                <th>Farmer:</th>
+                <td>@(Model.Farmer?.FarmName ?? Model.Farmer?.FullName) (@Model.Farmer?.PhoneNumber)</td>
+            </tr>
+        </table>
+
+        <!-- Buyer Order Actions -->
+        @if (isBuyer)
+        {
+            <div style="margin-top: 15px; border-top: 1px solid #ccc; padding-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+                @if (Model.OrderStatus == "Pending")
+                {
+                    <form asp-controller="Order" asp-action="CancelOrder" method="post" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-sm">Cancel Order</button>
+                    </form>
+                }
+
+                @if (Model.OrderStatus == "Delivered" && !Model.Reviews.Any())
+                {
+                    <a asp-controller="Review" asp-action="Create" asp-route-orderId="@Model.Id" class="btn btn-sm btn-primary">
+                        ★ Rate Farmer &amp; Write Review
+                    </a>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Tracking and Management Column -->
+    <div>
+        <!-- Order Tracking Box (R.5.2) -->
+        <div class="box">
+            <div class="box-header">Order Tracking &amp; Status</div>
+            <p><strong>Current Status:</strong> <span class="tag">@Model.OrderStatus</span></p>
+            <p><strong>Last Updated:</strong> @Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+            <p>
+                <strong>Tracking Notes:</strong><br />
+                @(string.IsNullOrWhiteSpace(Model.TrackingNotes) ? "No notes recorded yet." : Model.TrackingNotes)
+            </p>
+
+            <div style="background: #f9f9f9; border: 1px solid #eee; padding: 8px; margin-top: 10px; font-size: 12px; color: #555;">
+                <strong>Order Lifecycle:</strong> Pending &rarr; Accepted &rarr; Packed &rarr; Shipped &rarr; Delivered
+            </div>
+        </div>
+
+        <!-- Farmer / Admin Fulfillment Controls (R.5.2) -->
+        @if (isFarmer || isAdmin)
+        {
+            <div class="box">
+                <div class="box-header">Update Order Status (Farmer Fulfillment)</div>
+                <form asp-controller="Order" asp-action="UpdateStatus" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="OrderId" value="@Model.Id" />
+
+                    <div class="form-group">
+                        <label class="form-label">Change Status:</label>
+                        <select name="NewStatus" class="form-select">
+                            <option value="Pending" selected="@(Model.OrderStatus == "Pending")">Pending</option>
+                            <option value="Accepted" selected="@(Model.OrderStatus == "Accepted")">Accepted</option>
+                            <option value="Packed" selected="@(Model.OrderStatus == "Packed")">Packed</option>
+                            <option value="Shipped" selected="@(Model.OrderStatus == "Shipped")">Shipped</option>
+                            <option value="Delivered" selected="@(Model.OrderStatus == "Delivered")">Delivered</option>
+                            <option value="Cancelled" selected="@(Model.OrderStatus == "Cancelled")">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tracking / Dispatch Notes:</label>
+                        <input type="text" name="Notes" value="@Model.TrackingNotes" class="form-control" placeholder="e.g. Dispatched via local courier..." />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-sm">Update Order Status</button>
+                </form>
+            </div>
+        }
+
+        <!-- Reviews & Feedback Box (R.6.1 & R.6.2) -->
+        @if (Model.Reviews.Any())
+        {
+            <div class="box">
+                <div class="box-header">Buyer Rating &amp; Review</div>
+                @foreach (var review in Model.Reviews)
+                {
+                    <div style="margin-bottom: 8px;">
+                        <p><strong>Rating:</strong> @string.Concat(Enumerable.Repeat("★", review.Rating)) (@review.Rating / 5 stars)</p>
+                        <p><strong>Comment:</strong> "@review.Comment"</p>
+                        <p style="font-size: 11px; color: #666;">Submitted on @review.CreatedAt.ToString("yyyy-MM-dd")</p>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
